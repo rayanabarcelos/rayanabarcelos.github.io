@@ -1,0 +1,136 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{url}
+\setlength{\textwidth}{7.15in}
+\setlength{\textheight}{9.65in}
+\setlength{\oddsidemargin}{-0.34in}
+\setlength{\evensidemargin}{-0.34in}
+\setlength{\topmargin}{-0.62in}
+\setlength{\columnsep}{0.22in}
+\setlength{\parindent}{0.14in}
+\setlength{\parskip}{0pt}
+\pagestyle{plain}
+
+\title{\bfseries Enhanced Model Predictive Control of Voltage Profiles in MV Networks with Distributed Generation\\
+\large Gain Scheduling, Rate Constraints, and Node-Wise Soft Constraints}
+\author{Rayana Kristina Schneider Barcelos\\
+\small Federal Institute of Esp\'irito Santo (IFES), S\~ao Mateus, ES, Brazil}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper extends the impulse-response model predictive control (MPC) framework proposed by Farina et al. for voltage regulation in medium-voltage (MV) distribution networks with distributed generation (DG). The baseline controller is augmented with a bank of finite impulse response (FIR) models selected by gain scheduling, penalties and hard bounds on input-rate variations, node-wise soft voltage constraints, and a predictive supervisory logic for the on-load tap changer (OLTC). Because the original publication does not provide the numerical impulse-response matrices used in its PowerFactory case study, the comparison is performed on a reproducible surrogate FIR benchmark preserving the original controller dimensions and principal tuning parameters. Under operating-point changes and large disturbances, the enhanced controller reduces the maximum voltage-limit violation by 21.6\%, the integral of voltage violations by 40.2\%, node-seconds outside the statutory band by 32.8\%, total power-factor variation by 40.9\%, and the largest power-factor step by 79.1\%, without increasing OLTC operations.
+\end{abstract}
+
+\section{Introduction}
+High penetration of distributed generation can produce local voltage rise, reverse power flow, and increasingly demanding voltage-control problems in radial MV networks. Farina et al.~\cite{farina} proposed a hierarchical architecture in which a static optimal power-flow (OPF) layer generates voltage and reactive-power references, a centralized MPC layer computes DG power-factor references, and local automatic voltage regulators track the corresponding reactive-power commands.
+
+The main advantage of the original approach is the use of an input-output impulse-response model, which avoids explicit state estimation and allows voltage and control constraints to be handled directly in a quadratic program (QP). The original study also exposes limitations when the controller is used away from the operating point at which the FIR model was identified. The authors report oscillatory behavior under operating-point mismatch and explicitly suggest gain scheduling, different linearized models, and a larger number of slack variables as future extensions.
+
+This work implements those directions and adds explicit penalties and hard constraints on control increments. The objective is to preserve the simple QP structure of the original MPC while improving robustness to changing operating conditions, voltage-constraint localization, and actuator smoothness.
+
+\section{Baseline MPC Formulation}
+The baseline prediction model is the truncated discrete-time impulse-response representation
+\begin{equation}
+y(k)=\sum_{i=1}^{M}\left[g_i u(k-i)+\gamma_i d(k-i)\right]+\delta(k),
+\end{equation}
+where $y$ contains voltage deviations at monitored nodes, $u$ contains deviations of DG power-factor references, $d$ contains measurable disturbances, and $\delta$ summarizes unknown exogenous contributions. The original case study uses a sampling period $T=2$~s, $M=90$ FIR coefficients, eleven controlled voltages, eight manipulated DG power factors, prediction horizon $N=10$, control horizon $N_u=2$, $Q=10I$, $R=0.1I$, voltage limits of $0.9$--$1.1$~p.u., and power-factor limits of $0.6$--$1.0$.
+
+At each sample, the QP minimizes tracking error, control effort, and soft-constraint violations. In compact form,
+\begin{equation}
+\min_{U,\varepsilon_1,\varepsilon_2}
+Y^\top QY+U^\top RU+\mu_1\varepsilon_1^2+\mu_2\varepsilon_2^2,
+\end{equation}
+subject to the input and output constraints. Only the first optimal move is applied according to the receding-horizon principle. When reactive-power control is insufficient, nonzero output slack variables indicate infeasibility and are used by the OLTC supervisory logic.
+
+\section{Enhanced Control Strategy}
+\subsection{Scheduled FIR model bank}
+Instead of maintaining a single FIR model identified at one operating point, the enhanced controller stores a set of local impulse-response models
+\begin{equation}
+\mathcal{M}=\{\mathcal{M}_1,\mathcal{M}_2,\ldots,\mathcal{M}_{n_m}\}.
+\end{equation}
+An operating-region indicator selects the model that best represents the current loading and generation regime. This reduces systematic prediction error when the network moves between substantially different conditions.
+
+\subsection{Input-rate regularization and hard rate limits}
+A penalty on control increments is added to the objective,
+\begin{equation}
+J_{\Delta u}=\sum_{j=0}^{N_u-1}\Delta u(k+j)^\top
+R_{\Delta}\Delta u(k+j),
+\end{equation}
+with hard constraints
+\begin{equation}
+-\Delta u_{\max}\leq\Delta u(k+j)\leq\Delta u_{\max}.
+\end{equation}
+Unlike post-filtering, this approach shapes actuator motion inside the optimization problem and therefore respects the constraints by construction.
+
+\subsection{Node-wise soft voltage constraints}
+The two global output slack variables are replaced by lower and upper slacks associated with each controlled voltage and prediction step:
+\begin{equation}
+V_{\min}-\varepsilon_{\ell,j}\leq V_{\mathrm{pred},j}
+\leq V_{\max}+\varepsilon_{h,j},
+\end{equation}
+with $\varepsilon_{\ell,j},\varepsilon_{h,j}\geq0$. This localizes infeasibility and allows the supervisory layer to identify both the location and direction of voltage-limit violations.
+
+\subsection{Predictive OLTC supervisor}
+When persistent slack activation indicates insufficient reactive-power authority, the supervisor evaluates feasible neighboring tap positions and selects the move that yields the smallest predicted aggregate voltage violation. A dwell-time condition is retained to avoid excessive mechanical switching.
+
+\section{Reproducible Comparative Study}
+An exact numerical reproduction of the original PowerFactory case study is not possible from the published paper alone because the identified matrices $g_i$ and $\gamma_i$ are not provided. The baseline and enhanced controllers are therefore compared on a reproducible surrogate FIR plant preserving the principal dimensions and tuning values reported in the original work. The surrogate includes operating-point changes and large disturbances to stress model mismatch and constraint handling.
+
+Both controllers are evaluated on identical plant trajectories, voltage bounds, power-factor bounds, prediction horizon, and control horizon. The enhanced formulation differs only by scheduled model selection, $\Delta u$ regularization, a hard input-rate limit, node-wise slack variables, and predictive OLTC supervision.
+
+\section{Results}
+Table~\ref{tab:results} summarizes the main performance indicators. The enhanced formulation reduces both voltage-bound violations and actuator motion.
+
+\begin{table}[h]
+\centering
+\caption{Baseline and enhanced MPC results.}
+\label{tab:results}
+\small
+\begin{tabular}{|p{2.4cm}|c|c|c|}
+\hline
+Metric & Baseline & Enhanced & Change\\ \hline
+Maximum voltage violation & 0.03686 & 0.02891 & -21.6\%\\
+Violation integral (p.u.s) & 4.225 & 2.527 & -40.2\%\\
+Node-seconds outside & 458 & 308 & -32.8\%\\
+Mean $|V-1|$ (p.u.) & 0.02754 & 0.02520 & -8.5\%\\
+PF total variation & 22.38 & 13.23 & -40.9\%\\
+Maximum PF step & 0.382 & 0.080 & -79.1\%\\
+OLTC operations & 5 & 5 & 0\\ \hline
+\end{tabular}
+\end{table}
+
+The maximum voltage-limit violation decreases from 0.03686 to 0.02891~p.u. The integral of violations decreases from 4.225 to 2.527~p.u.s, while node-seconds outside the admissible interval decrease from 458 to 308~s. Mean absolute voltage deviation is also reduced.
+
+The most significant change is observed in actuator smoothness. Total power-factor variation decreases from 22.38 to 13.23 and the largest individual power-factor step decreases from 0.382 to 0.080. The number of OLTC operations remains unchanged at five. The minimum voltage changes slightly from 0.9311 to 0.9276~p.u. but remains above the lower bound, while the maximum voltage is reduced from 1.1369 to 1.1289~p.u.
+
+\section{Discussion}
+The results support the hypothesis that a fixed FIR model can be strengthened by scheduling local models when the operating regime changes. Explicit rate shaping is also preferable to post-filtering because it is incorporated into the optimization and respects constraints by construction. Node-wise slacks provide richer diagnostic information than two global slack variables and make the interaction with the OLTC supervisor more transparent.
+
+The principal limitation of the present comparison is the use of a surrogate plant. The percentages reported here are results of the implemented reproducible benchmark and must not be interpreted as a numerical reproduction of the Italian MV network used in the original study. A stronger validation should reconstruct a complete network in an open simulation environment, identify FIR responses at multiple operating points, and repeat the same experiments under identical disturbance scenarios.
+
+\section{Conclusions}
+An enhanced impulse-response MPC strategy for voltage control in MV networks with distributed generation was developed and compared with a faithful implementation of the original control structure. The extensions preserve the computationally attractive QP formulation while improving robustness to operating-point changes, voltage-constraint management, and control smoothness.
+
+Future work should validate the approach on a complete distribution-network model, compare fixed, gain-scheduled, and adaptive FIR MPC under identical conditions, and investigate distributed implementations.
+
+\begin{thebibliography}{9}
+\bibitem{farina}
+M. Farina, A. Guagliardi, F. Mariani, C. Sandroni, and R. Scattolini,
+``Model predictive control of voltage profiles in MV networks with distributed generation,'' 2013.
+
+\bibitem{camacho}
+E. F. Camacho and C. Bordons,
+\emph{Model Predictive Control}. Springer, 2007.
+
+\bibitem{scattolini}
+R. Scattolini,
+``Architectures for distributed and hierarchical model predictive control---a review,''
+\emph{Journal of Process Control}, vol. 19, pp. 723--731, 2009.
+\end{thebibliography}
+
+\end{document}
