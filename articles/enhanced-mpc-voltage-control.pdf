@@ -1,0 +1,413 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Length 9734 >>
+stream
+BT
+/F2 14.0 Tf
+1 0 0 1 117.8 740.0 Tm
+(Enhanced Model Predictive Control of Voltage Profiles in) Tj
+/F2 14.0 Tf
+1 0 0 1 175.0 723.0 Tm
+(MV Networks with Distributed Generation) Tj
+/F2 10 Tf
+1 0 0 1 150.0 706.0 Tm
+(Gain Scheduling, Rate Constraints, and Node-Wise Soft Constraints) Tj
+/F1 8.4 Tf
+1 0 0 1 102.7 690.0 Tm
+(Rayana Kristina Schneider Barcelos - Federal Institute of Espirito Santo \(IFES\), Sao Mateus, ES, Brazil) Tj
+/F2 8.8 Tf
+1 0 0 1 42.0 647.0 Tm
+(ABSTRACT) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 630.3 Tm
+(This paper extends the impulse-response model predictive) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 619.5 Tm
+(control framework proposed by Farina et al. for voltage) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 608.7 Tm
+(regulation in medium-voltage distribution networks with) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 597.9 Tm
+(distributed generation. The baseline controller is) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 587.1 Tm
+(augmented with a bank of FIR models selected by gain) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 576.3 Tm
+(scheduling, penalties and hard bounds on input-rate) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 565.5 Tm
+(variations, node-wise soft voltage constraints, and) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 554.7 Tm
+(predictive OLTC supervision. Because the original) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 543.9 Tm
+(publication does not provide the numerical impulse-) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 533.1 Tm
+(response matrices used in its PowerFactory case study, the) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 522.3 Tm
+(comparison uses a reproducible surrogate FIR benchmark) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 511.5 Tm
+(preserving the original dimensions and principal tuning) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 500.7 Tm
+(parameters. The enhanced controller reduces maximum) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 489.9 Tm
+(voltage-limit violation by 21.6%, the integral of) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 479.1 Tm
+(violations by 40.2%, node-seconds outside the band by) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 468.3 Tm
+(32.8%, total power-factor variation by 40.9%, and the) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 457.5 Tm
+(largest power-factor step by 79.1%, without increasing) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 446.7 Tm
+(OLTC operations.) Tj
+/F2 8.8 Tf
+1 0 0 1 42.0 431.3 Tm
+(I. INTRODUCTION) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 414.6 Tm
+(High penetration of distributed generation can produce) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 403.8 Tm
+(local voltage rise, reverse power flow, and demanding) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 393.0 Tm
+(voltage-control problems in radial medium-voltage) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 382.2 Tm
+(networks. Farina et al. proposed a hierarchical) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 371.4 Tm
+(architecture in which a static optimal power-flow layer) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 360.6 Tm
+(generates voltage and reactive-power references, a) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 349.8 Tm
+(centralized MPC layer computes distributed-generator) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 339.0 Tm
+(power-factor references, and local automatic voltage) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 328.2 Tm
+(regulators track reactive-power commands. Their approach) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 317.4 Tm
+(uses an input-output impulse-response model, avoids) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 306.6 Tm
+(explicit state estimation, and handles voltage and control) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 295.8 Tm
+(constraints directly in a quadratic program. The original) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 285.0 Tm
+(study reports oscillatory behavior under operating-point) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 274.2 Tm
+(mismatch and suggests gain scheduling, multiple linearized) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 263.4 Tm
+(models, and more slack variables as future improvements.) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 252.6 Tm
+(This work implements these directions and adds explicit) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 241.8 Tm
+(rate penalties and rate constraints.) Tj
+/F2 8.8 Tf
+1 0 0 1 42.0 226.4 Tm
+(II. BASELINE MPC FORMULATION) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 209.7 Tm
+(The baseline model is y\(k\) = sum_i [g_i u\(k-i\) + gamma_i) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 198.9 Tm
+(d\(k-i\)] + delta\(k\), where y contains voltage deviations, u) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 188.1 Tm
+(contains distributed-generator power-factor references, d) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 177.3 Tm
+(contains measurable disturbances, and delta summarizes) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 166.5 Tm
+(unknown exogenous contributions. The original benchmark) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 155.7 Tm
+(uses T=2 s, M=90, eleven controlled voltages, eight) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 144.9 Tm
+(manipulated power factors, N=10, Nu=2, Q=10 I, R=0.1 I,) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 134.1 Tm
+(voltage limits 0.9 to 1.1 pu, and power-factor limits 0.6) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 123.3 Tm
+(to 1.0. At each sample the quadratic program minimizes) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 112.5 Tm
+(tracking error, control effort, and soft-constraint) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 101.7 Tm
+(violations. Only the first optimal move is applied.) Tj
+/F2 8.8 Tf
+1 0 0 1 42.0 86.4 Tm
+(III. ENHANCED CONTROL STRATEGY) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 69.6 Tm
+(A. Scheduled FIR model bank. Multiple local FIR models are) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 58.8 Tm
+(stored and an operating-region indicator selects the model) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 647.0 Tm
+(that best matches loading and generation. B. Input-rate) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 636.2 Tm
+(regularization. The cost adds Delta u' R_Delta Delta u and) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 625.4 Tm
+(hard bounds |Delta u| <= Delta u_max, suppressing rapid) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 614.6 Tm
+(power-factor changes. C. Node-wise soft constraints.) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 603.8 Tm
+(Separate lower and upper slacks are assigned to each) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 593.0 Tm
+(controlled voltage and prediction step: V_min - eps_low <=) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 582.2 Tm
+(V_pred <= V_max + eps_high. D. Prdictive OLTC supervisor.) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 571.4 Tm
+(When persistent slack activation indicates insufficient) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 560.6 Tm
+(reactive-power authority, candidate tap positions are) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 549.8 Tm
+(evaluated and the action that most reduces predicted) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 539.0 Tm
+(aggregate violation is selected, subject to a dwell-time) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 528.2 Tm
+(condition.) Tj
+/F2 8.8 Tf
+1 0 0 1 315.0 512.9 Tm
+(IV. REPRODUCIBLE COMPARATIVE STUDY) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 496.1 Tm
+(Exact numerical reproduction of the original PowerFactory) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 485.3 Tm
+(study is not possible from the paper alone because the)) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 474.5 Tm
+(impulse-response matrices g_i and gamma_i are not) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 463.7 Tm
+(published. The baseline and enhanced algorithms are) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 452.9 Tm
+(therefore compared on a reproducible surrogate FIR plant) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 442.1 Tm
+(with the same primary dimensions and tuning values as the) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 431.3 Tm
+(original controller. The surrogate includes operating-) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 420.5 Tm
+(point changes and large disturbances to stress model) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 409.7 Tm
+(mismatch and constraint handling. Both controllers use) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 398.9 Tm
+(identical plant trajectories, voltage limits, power-factor) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 388.1 Tm
+(limits, prediction horizon, and control horizon.) Tj
+/F2 8.8 Tf
+1 0 0 1 315.0 372.8 Tm
+(V. RESULTS) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 356.0 Tm
+(Maximum voltage violation falls from 0.03686 pu to 0.02891) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 345.2 Tm
+(pu \(21.6%\). The integral of voltage violations falls from) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 334.4 Tm
+(4.225 to 2.527 pu*s \(40.2%\), while node-seconds outside) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 323.6 Tm
+(the band fall from 458 s to 308 s \(32.8%\). Mean absolute) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 312.8 Tm
+(voltage deviation from 1 pu falls by 8.5%. Total power-) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 302.0 Tm
+(factor variation falls from 22.38 to 13.23 \(40.9%\), and) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 291.2 Tm
+(the maximum individual power-factor step falls from 0.382) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 280.4 Tm
+(to 0.080 \(79.1%\). Both controllers perform five OLTC) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 269.6 Tm
+(operations. Minimum voltage changes from 0.9311 to 0.9276) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 258.8 Tm
+(pu and remains above 0.9 pu, while maximum voltage falls) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 248.0 Tm
+(from 1.1369 to 1.1289 pu.) Tj
+/F2 8.8 Tf
+1 0 0 1 315.0 232.7 Tm
+(VI. DISCUSSION) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 216.0 Tm
+(The results support using scheduled local models when the) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 205.2 Tm
+(operating regime changes. Explicit rate shaping is) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 194.4 Tm
+(preferable to post-filtering because it is incorporated) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 183.6 Tm
+(into the optimization and respects constraints by) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 172.8 Tm
+(construction. Node-wise slacks provide richer diagnostic) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 162.0 Tm
+(information than two global slack variables and make OLTC) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 151.2 Tm
+(coordination more transparent. The principal limitation is) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 140.4 Tm
+(the surrogate plant; the reported percentages are) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 129.6 Tm
+(benchmark results rather than a reproduction of the) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 118.8 Tm
+(original Italian MV network.) Tj
+/F2 8.8 Tf
+1 0 0 1 315.0 103.4 Tm
+(VII. CONCLUSIONS) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 86.7 Tm
+(The enhanced impulse-response MPC preserves the) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 75.9 Tm
+(computationally attractive quadratic-program structure) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 65.1 Tm
+(while improving robustness to operating-point changes,) Tj
+/F1 8.8 Tf
+1 0 0 1 315.0 54.3 Tm
+(voltage-constraint management, and control smoothness.) Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 7 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 3 0 R >>
+endobj
+5 0 obj
+<< /Length 1019 >>
+stream
+BT
+/F1 8.8 Tf
+1 0 0 1 42.0 750.0 Tm
+(Future work should validate the approach on a full network) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 739.2 Tm
+(model, compare fixed, gain-scheduled, and adaptive FIR MPC) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 728.4 Tm
+(under identical conditions, and investigate distributed) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 717.6 Tm
+(implementations.) Tj
+/F2 8.8 Tf
+1 0 0 1 42.0 702.3 Tm
+(REFERENCES) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 685.5 Tm
+([1] M. Farina et al., "Model predictive control of voltage) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 674.7 Tm
+(profiles in MV networks with distributed generation,") Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 663.9 Tm
+(2013. [2] E. F. Camacho and C. Bordons, Model Predictive) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 653.1 Tm
+(Control, Springer, 2007. [3] R. Scattolini, "Architectures) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 642.3 Tm
+(for distributed and hierarchical model predictive control) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 631.5 Tm
+(- a review," Journal of Process Control, vol. 19, pp.) Tj
+/F1 8.8 Tf
+1 0 0 1 42.0 620.7 Tm
+(723-731, 2009.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 7 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R] /Count 2 >>
+endobj
+8 0 obj
+<< /Type /Catalog /Pages 7 0 R >>
+endobj
+9 0 obj
+<< /Title (Enhanced Model Predictive Control of Voltage Profiles in MV Networks with Distributed Generation) /Author (Rayana Kristina Schneider Barcelos) >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000154 00000 n 
+0000009940 00000 n 
+0000010076 00000 n 
+0000011147 00000 n 
+0000011283 00000 n 
+0000011346 00000 n 
+0000011395 00000 n 
+trailer
+<< /Size 10 /Root 8 0 R /Info 9 0 R >>
+startxref
+11567
+%%EOF
