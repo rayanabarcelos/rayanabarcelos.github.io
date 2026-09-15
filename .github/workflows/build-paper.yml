@@ -1,0 +1,37 @@
+name: Build Enhanced MPC paper PDF
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'articles/enhanced-mpc-voltage-control.tex'
+      - '.github/workflows/build-paper.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-base texlive-latex-recommended
+
+      - name: Build PDF
+        run: |
+          cd articles
+          pdflatex -interaction=nonstopmode -halt-on-error enhanced-mpc-voltage-control.tex
+          pdflatex -interaction=nonstopmode -halt-on-error enhanced-mpc-voltage-control.tex
+
+      - name: Commit PDF
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add articles/enhanced-mpc-voltage-control.pdf
+          git diff --cached --quiet && exit 0
+          git commit -m "Build Enhanced MPC article PDF"
+          git push
