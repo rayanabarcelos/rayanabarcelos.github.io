@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Working paper by Rayana Kristina Schneider Barcelos on enhanced model predictive control of voltage profiles in medium-voltage networks with distributed generation.">
+<title>Enhanced MPC of Voltage Profiles | Rayana Schneider</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1d30;--card:rgba(255,255,255,.055);--line:rgba(255,255,255,.12);--text:#edf4fb;--muted:#a9bbcc;--green:#35d07f;--blue:#3aa7ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at 15% 5%,rgba(53,208,127,.11),transparent 25%),radial-gradient(circle at 90% 0,rgba(58,167,255,.11),transparent 30%),var(--bg);color:var(--text);line-height:1.7}
+a{color:#a9dcff;text-decoration:none}a:hover{color:var(--green)}.wrap{width:min(980px,calc(100% - 32px));margin:auto}
+nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);background:rgba(7,17,31,.82);border-bottom:1px solid var(--line)}
+.nav{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font-weight:800}.brand span{color:var(--green)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{display:inline-flex;padding:10px 14px;border-radius:10px;border:1px solid rgba(58,167,255,.28);background:rgba(58,167,255,.07);font-weight:700;font-size:.9rem}.btn.primary{background:linear-gradient(135deg,var(--green),#1ca866);color:#06150d;border:0}
+header{padding:72px 0 38px}.kicker{color:var(--green);font-weight:800;text-transform:uppercase;letter-spacing:1.2px;font-size:.78rem}
+h1{font-size:clamp(2.1rem,5vw,4.2rem);line-height:1.04;letter-spacing:-2px;margin:.4rem 0 1.1rem}.subtitle{font-size:1.18rem;color:#cde7fb;max-width:850px}
+.meta{margin-top:24px;color:var(--muted)}.notice{margin-top:28px;padding:15px 18px;border:1px solid rgba(53,208,127,.24);background:rgba(53,208,127,.07);border-radius:14px;color:#c9e8d7}
+main{padding-bottom:70px}.paper{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:22px;padding:clamp(22px,4vw,48px);box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.abstract{padding:20px;border-left:4px solid var(--blue);background:rgba(58,167,255,.06);border-radius:0 14px 14px 0}.abstract strong{color:#fff}
+h2{font-size:1.65rem;margin-top:2.4rem;margin-bottom:.65rem;letter-spacing:-.5px}h3{font-size:1.08rem;margin-top:1.5rem;color:#dcecf8}.paper p{color:#c3d0dc}
+.eq{overflow:auto;text-align:center;padding:14px;margin:18px 0;background:#06101d;border:1px solid var(--line);border-radius:12px;font-family:"Times New Roman",serif;color:#f5f8fb}
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:.93rem}th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left}th{color:#eaf6ff;background:rgba(58,167,255,.08)}td{color:#c7d4df}.good{color:#86e5af;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0}.metric{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card)}.metric b{font-size:1.7rem;color:var(--green);display:block}.metric span{color:var(--muted);font-size:.87rem}
+.refs{font-size:.92rem;color:#aebdca}.refs p{margin:.55rem 0}footer{padding:28px 0 45px;border-top:1px solid var(--line);color:#8297aa;font-size:.9rem}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.actions .btn:not(.primary){display:none}h1{letter-spacing:-1px}.paper{border-radius:16px}}
+@media print{nav,.notice,.actions{display:none}body{background:#fff;color:#111}.paper{box-shadow:none;border:0;padding:0}.paper p,.meta,.refs{color:#222}a{color:#111}.wrap{width:100%}}
+</style>
+</head>
+<body>
+<nav><div class="wrap nav"><a class="brand" href="../index.html">Rayana <span>Schneider</span></a><div class="actions"><a class="btn" href="../index.html#publicacoes">Publications</a><a class="btn primary" href="enhanced-mpc-voltage-control.pdf">Open PDF</a></div></div></nav>
+<header><div class="wrap">
+<div class="kicker">Working paper · 2026</div>
+<h1>Enhanced Model Predictive Control of Voltage Profiles in MV Networks with Distributed Generation</h1>
+<div class="subtitle">Gain Scheduling, Rate Constraints, and Node-Wise Soft Constraints</div>
+<div class="meta"><strong>Rayana Kristina Schneider Barcelos</strong><br>Federal Institute of Espírito Santo (IFES), São Mateus, ES, Brazil</div>
+<div class="notice">This page presents a reproducible extension of the impulse-response MPC framework of Farina et al. The numerical comparison uses a surrogate FIR benchmark because the original paper does not publish the identified impulse-response matrices used in its PowerFactory case study.</div>
+</div></header>
+<main><div class="wrap"><article class="paper">
+<div class="abstract"><strong>Abstract—</strong> This paper extends the impulse-response model predictive control (MPC) framework proposed by Farina et al. for voltage regulation in medium-voltage distribution networks with distributed generation. The baseline controller is augmented with a bank of finite impulse response (FIR) models selected by gain scheduling, penalties and hard bounds on input-rate variations, node-wise soft voltage constraints, and a predictive supervisory logic for the on-load tap changer (OLTC). Because the original publication does not provide the numerical impulse-response matrices used in its PowerFactory case study, the comparison is performed on a reproducible surrogate FIR benchmark preserving the original controller dimensions and principal tuning parameters. Under operating-point changes and large disturbances, the enhanced controller reduces the maximum voltage-limit violation by 21.6%, the integral of voltage violations by 40.2%, node-seconds outside the statutory band by 32.8%, total power-factor variation by 40.9%, and the largest power-factor step by 79.1%, without increasing OLTC operations.</div>
+
+<h2>I. Introduction</h2>
+<p>High penetration of distributed generation can produce local voltage rise, reverse power flow, and increasingly demanding voltage-control problems in radial medium-voltage networks. Farina et al. proposed a hierarchical architecture in which a static optimal power-flow layer generates voltage and reactive-power references, a centralized MPC layer computes distributed-generator power-factor references, and local automatic voltage regulators track the corresponding reactive-power commands.</p>
+<p>The main advantage of the original approach is the use of an input-output impulse-response model, which avoids explicit state estimation and allows voltage and control constraints to be handled directly in a quadratic program. The study also exposes limitations when the controller is used away from the operating point at which the FIR model was identified. Oscillatory behavior is reported under operating-point mismatch, and the authors explicitly suggest gain scheduling, different linearized models, and a larger number of slack variables as future extensions. The present work implements those directions and adds explicit rate penalties and hard rate constraints.</p>
+
+<h2>II. Baseline MPC Formulation</h2>
+<p>The baseline prediction model is the truncated discrete-time impulse-response representation</p>
+<div class="eq">y(k) = Σ<sub>i=1</sub><sup>M</sup> [ g<sub>i</sub>u(k-i) + γ<sub>i</sub>d(k-i) ] + δ(k)</div>
+<p>where <em>y</em> contains voltage deviations at monitored nodes, <em>u</em> contains deviations of distributed-generator power-factor references, <em>d</em> contains measurable disturbances, and δ summarizes unknown exogenous contributions. The reference implementation follows the principal parameters reported in the original study: sampling period <strong>T = 2 s</strong>, <strong>M = 90</strong> FIR coefficients, eleven controlled voltages, eight manipulated DG power factors, prediction horizon <strong>N = 10</strong>, control horizon <strong>N<sub>u</sub> = 2</strong>, <strong>Q = 10I</strong>, <strong>R = 0.1I</strong>, voltage limits of 0.9–1.1 pu and power-factor limits of 0.6–1.0.</p>
+<p>At each sample, the quadratic program minimizes tracking error, control effort and soft-constraint violations. Only the first element of the optimal control sequence is applied according to the receding-horizon principle. The original OLTC supervisor uses output slack activation to detect when reactive-power control alone is insufficient.</p>
+
+<h2>III. Enhanced Control Strategy</h2>
+<h3>A. Scheduled FIR model bank</h3>
+<p>Instead of maintaining one FIR model identified at a single operating point, the enhanced controller stores multiple local models. An operating-region indicator selects the model that best represents the current loading and generation regime. This reduces systematic prediction error when the network moves between substantially different conditions.</p>
+<h3>B. Input-rate regularization and hard rate limits</h3>
+<p>The cost function is augmented by a penalty on control increments,</p>
+<div class="eq">J<sub>Δu</sub> = Σ Δu(k)<sup>T</sup> R<sub>Δ</sub> Δu(k), &nbsp;&nbsp; |Δu(k)| ≤ Δu<sub>max</sub></div>
+<p>so rapid changes of power-factor references are discouraged inside the optimization rather than filtered afterward.</p>
+<h3>C. Node-wise soft voltage constraints</h3>
+<p>A separate lower and upper slack is assigned to every controlled voltage and prediction step:</p>
+<div class="eq">V<sub>min</sub> − ε<sub>low,j</sub> ≤ V<sub>pred,j</sub> ≤ V<sub>max</sub> + ε<sub>high,j</sub></div>
+<p>This localizes infeasibility and provides the supervisory layer with explicit information about where and in which direction a voltage violation occurs.</p>
+<h3>D. Predictive OLTC supervisor</h3>
+<p>When persistent slack activation indicates insufficient reactive-power authority, the supervisor evaluates candidate tap positions and selects the move that most reduces the predicted aggregate voltage violation. A dwell-time condition remains in place to avoid excessive mechanical switching.</p>
+
+<h2>IV. Reproducible Comparative Study</h2>
+<p>An exact numerical reproduction of the original PowerFactory case study is not possible from the paper alone because the numerical matrices g<sub>i</sub> and γ<sub>i</sub> are not published. The baseline and enhanced algorithms are therefore compared on a reproducible surrogate FIR plant preserving the primary dimensions and tuning values of the original controller. Operating-point changes and large disturbances are included specifically to stress model mismatch and constraint handling.</p>
+<p>Both controllers are evaluated on identical plant trajectories, voltage limits, power-factor limits, prediction horizon and control horizon. The enhanced formulation differs only by scheduled model selection, Δu regularization, a hard input-rate limit, node-wise slacks and predictive OLTC supervision.</p>
+
+<h2>V. Results</h2>
+<div class="grid">
+<div class="metric"><b>−40.2%</b><span>integral of voltage violations</span></div>
+<div class="metric"><b>−40.9%</b><span>total power-factor variation</span></div>
+<div class="metric"><b>−79.1%</b><span>largest power-factor step</span></div>
+</div>
+<table>
+<thead><tr><th>Metric</th><th>Baseline MPC</th><th>Enhanced MPC</th><th>Change</th></tr></thead>
+<tbody>
+<tr><td>Maximum voltage violation</td><td>0.03686 pu</td><td>0.02891 pu</td><td class="good">−21.6%</td></tr>
+<tr><td>Integral of voltage violations</td><td>4.225 pu·s</td><td>2.527 pu·s</td><td class="good">−40.2%</td></tr>
+<tr><td>Node-seconds outside limits</td><td>458 s</td><td>308 s</td><td class="good">−32.8%</td></tr>
+<tr><td>Mean |V − 1|</td><td>0.02754 pu</td><td>0.02520 pu</td><td class="good">−8.5%</td></tr>
+<tr><td>Total power-factor variation</td><td>22.38</td><td>13.23</td><td class="good">−40.9%</td></tr>
+<tr><td>Maximum power-factor step</td><td>0.382</td><td>0.080</td><td class="good">−79.1%</td></tr>
+<tr><td>OLTC operations</td><td>5</td><td>5</td><td>unchanged</td></tr>
+</tbody></table>
+<p>The enhanced formulation reduces both constraint violations and actuator motion. The minimum voltage changes slightly from 0.9311 to 0.9276 pu but remains above the lower statutory bound, while the maximum voltage is reduced from 1.1369 to 1.1289 pu.</p>
+
+<h2>VI. Discussion</h2>
+<p>The comparison supports the hypothesis that a fixed FIR representation can be strengthened by scheduling local models when the operating regime changes. Explicit rate shaping is also preferable to post-filtering because it is incorporated into the optimization and respects constraints by construction. Node-wise slacks provide richer diagnostic information than two global slack variables and make the interaction with the OLTC supervisor more transparent.</p>
+<p>The principal limitation is the use of a surrogate plant. The percentages above are results of the implemented reproducible benchmark and must not be interpreted as a numerical reproduction of the Italian MV network used by Farina et al. A stronger validation should reconstruct a complete network in an open simulation environment, identify FIR responses at multiple operating points, and repeat the same experiments under identical disturbance scenarios.</p>
+
+<h2>VII. Conclusions</h2>
+<p>An enhanced impulse-response MPC strategy for voltage control in MV networks with distributed generation was developed and compared with a faithful implementation of the original control structure. The extensions preserve the computationally attractive quadratic-program structure while improving robustness to operating-point changes, voltage-constraint management and control smoothness. Future work should validate the approach on a full network model, compare fixed, gain-scheduled and adaptive FIR MPC under identical conditions, and investigate distributed implementations.</p>
+
+<h2>References</h2>
+<div class="refs">
+<p>[1] M. Farina, A. Guagliardi, F. Mariani, C. Sandroni, and R. Scattolini, “Model predictive control of voltage profiles in MV networks with distributed generation,” 2013.</p>
+<p>[2] E. F. Camacho and C. Bordons, <em>Model Predictive Control</em>. Springer, 2007.</p>
+<p>[3] R. Scattolini, “Architectures for distributed and hierarchical model predictive control — a review,” <em>Journal of Process Control</em>, vol. 19, pp. 723–731, 2009.</p>
+</div>
+</article></div></main>
+<footer><div class="wrap">© 2026 Rayana Kristina Schneider Barcelos · Working paper · Engineering and Model Predictive Control</div></footer>
+</body>
+</html>
