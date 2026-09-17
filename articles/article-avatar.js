@@ -1,5 +1,6 @@
 (function(){
-const API_URL='https://etching-contact-barterer.ngrok-free.dev/chat';
+const CHAT_URL='https://etching-contact-barterer.ngrok-free.dev/chat';
+const SPEAK_URL='https://etching-contact-barterer.ngrok-free.dev/speak';
 
 const link=document.createElement('link');
 link.rel='stylesheet';
@@ -20,6 +21,7 @@ box.innerHTML=`
     </div>
     <div class="avatar-controls">
       <button class="primary send" type="button">Enviar</button>
+      <button class="speak" type="button" disabled>🔊 Ouvir de novo</button>
       <button class="guide" type="button">Voltar ao guia</button>
       <button class="min" type="button">Minimizar</button>
     </div>
@@ -36,6 +38,7 @@ const status=box.querySelector('.avatar-status');
 const input=box.querySelector('.chat-input');
 const sendBtn=box.querySelector('.send');
 const micBtn=box.querySelector('.mic');
+const speakBtn=box.querySelector('.speak');
 const guideBtn=box.querySelector('.guide');
 const minBtn=box.querySelector('.min');
 const avatarWrap=box.querySelector('.avatar-wrap');
@@ -59,6 +62,9 @@ let current=items[0];
 let conversationMode=false;
 let busy=false;
 let history=[];
+let lastAnswer='';
+let currentAudio=null;
+let currentAudioUrl='';
 
 function headings(){return Array.from(document.querySelectorAll('h2,h3'))}
 function active(){
@@ -69,12 +75,57 @@ function active(){
 function setGuide(it){current=it;title.textContent=it.title;text.textContent=it.text;status.textContent='Você pode perguntar por texto ou microfone.'}
 function compactHistory(){return history.slice(-6).map(x=>(x.role==='user'?'Visitante: ':'Rayana virtual: ')+x.content).join('\n')}
 
+function stopAudio(){
+  if(currentAudio){currentAudio.pause();currentAudio.currentTime=0;currentAudio=null;}
+  if(currentAudioUrl){URL.revokeObjectURL(currentAudioUrl);currentAudioUrl='';}
+  box.classList.remove('speaking');
+}
+
+async function speakText(spokenText,automatic=false){
+  const phrase=(spokenText||'').trim();
+  if(!phrase)return;
+  stopAudio();
+  speakBtn.disabled=true;
+  status.textContent='Gerando a voz da Rayana virtual…';
+  try{
+    const r=await fetch(SPEAK_URL,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'ngrok-skip-browser-warning':'true'
+      },
+      body:JSON.stringify({text:phrase})
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const blob=await r.blob();
+    currentAudioUrl=URL.createObjectURL(blob);
+    currentAudio=new Audio(currentAudioUrl);
+    currentAudio.onplay=()=>{box.classList.add('speaking');status.textContent='Falando com a voz pt-BR-FranciscaNeural.';};
+    currentAudio.onended=()=>{box.classList.remove('speaking');status.textContent='Pronta para a próxima pergunta.';speakBtn.disabled=false;};
+    currentAudio.onerror=()=>{box.classList.remove('speaking');status.textContent='Não consegui reproduzir o áudio.';speakBtn.disabled=false;};
+    try{
+      await currentAudio.play();
+    }catch(playError){
+      box.classList.remove('speaking');
+      speakBtn.disabled=false;
+      status.textContent=automatic?'A resposta chegou. Clique em “🔊 Ouvir de novo” para ouvir a voz.':'Clique novamente em “🔊 Ouvir de novo” para reproduzir o áudio.';
+      console.warn(playError);
+    }
+  }catch(e){
+    box.classList.remove('speaking');
+    speakBtn.disabled=false;
+    status.textContent='A resposta em texto funcionou, mas não consegui gerar o áudio.';
+    console.error(e);
+  }
+}
+
 async function sendMessage(raw){
   const question=(raw||'').trim();
   if(!question||busy)return;
   conversationMode=true;busy=true;
+  stopAudio();
   input.value='';
-  sendBtn.disabled=true;micBtn.disabled=true;
+  sendBtn.disabled=true;micBtn.disabled=true;speakBtn.disabled=true;
   title.textContent='Conversando com o Qwen';
   text.textContent='Pensando na sua pergunta…';
   status.textContent='Consultando o modelo local da Rayana…';
@@ -85,7 +136,7 @@ async function sendMessage(raw){
     : question;
 
   try{
-    const r=await fetch(API_URL,{
+    const r=await fetch(CHAT_URL,{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
@@ -97,9 +148,12 @@ async function sendMessage(raw){
     const data=await r.json();
     const answer=(data.answer||'').trim()||'Não consegui gerar uma resposta agora.';
     history.push({role:'user',content:question},{role:'assistant',content:answer});
+    lastAnswer=answer;
     title.textContent='Rayana virtual';
     text.textContent=answer;
-    status.textContent='Resposta gerada pelo Qwen3-4B-Instruct-2507.';
+    speakBtn.disabled=false;
+    status.textContent='Resposta gerada pelo Qwen3-4B-Instruct-2507. Gerando áudio…';
+    await speakText(answer,true);
   }catch(e){
     title.textContent='Não consegui conectar';
     text.textContent='O servidor local pode estar desligado ou o endereço do ngrok pode ter mudado.';
@@ -107,14 +161,16 @@ async function sendMessage(raw){
     console.error(e);
   }finally{
     busy=false;sendBtn.disabled=false;micBtn.disabled=false;
+    if(lastAnswer&&!currentAudio)speakBtn.disabled=false;
   }
 }
 
 sendBtn.addEventListener('click',()=>sendMessage(input.value));
 input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage(input.value)}});
+speakBtn.addEventListener('click',()=>{if(lastAnswer)speakText(lastAnswer,false)});
 
-guideBtn.addEventListener('click',()=>{conversationMode=false;setGuide(active())});
-minBtn.addEventListener('click',()=>{const m=box.classList.toggle('minimized');minBtn.textContent=m?'Expandir':'Minimizar'});
+guideBtn.addEventListener('click',()=>{stopAudio();conversationMode=false;setGuide(active())});
+minBtn.addEventListener('click',()=>{const m=box.classList.toggle('minimized');minBtn.textContent=m?'Expandir':'Minimizar';if(m)stopAudio()});
 avatarWrap.addEventListener('click',()=>{if(box.classList.contains('minimized')){box.classList.remove('minimized');minBtn.textContent='Minimizar'}});
 
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -135,5 +191,6 @@ if(SpeechRecognition){
 
 let ticking=false;
 addEventListener('scroll',()=>{if(!ticking){requestAnimationFrame(()=>{if(!conversationMode){const a=active();if(a.title!==current.title)setGuide(a)}ticking=false});ticking=true}},{passive:true});
+addEventListener('beforeunload',stopAudio);
 setGuide(active());
 })();
